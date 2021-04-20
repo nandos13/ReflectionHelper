@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>JakePerry</RootNamespace>
+    <Authors>Jake Perry</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>JakePerry.ReflectionHelper</PackageId>
   </PropertyGroup>
 
 </Project>
