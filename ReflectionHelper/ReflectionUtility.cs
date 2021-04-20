@@ -153,5 +153,48 @@ namespace JakePerry
         {
             return GetMembers(type, bindingFlags, memberFlags, null);
         }
+
+        /// <summary>
+        /// Get all types in the specified assembiles which are assignable to the specified type.
+        /// </summary>
+        /// <param name="type">The assignee type.</param>
+        /// <param name="assemblies">The collection of assemblies to search.</param>
+        /// <returns>
+        /// A collection of all the types in the specified assemblies that are assignable to <paramref name="type"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> is null.</exception>
+        public static Type[] GetAssignableTypes(Type type, IEnumerable<Assembly> assemblies)
+        {
+            _ = type ?? throw new ArgumentNullException(nameof(type));
+
+            if (assemblies != null)
+            {
+                var assignableTypes = new List<Type>();
+
+                foreach (var assembly in assemblies)
+                    if (assembly != null)
+                        foreach (var t in assembly.GetTypes())
+                            if (type.IsAssignableFrom(t))
+                                assignableTypes.Add(t);
+
+                if (assignableTypes.Count > 0)
+                    return assignableTypes.ToArray();
+            }
+
+            return Array.Empty<Type>();
+        }
+
+        /// <summary>
+        /// Get all types in the current <see cref="AppDomain"/> which are assignable to the specified type.
+        /// </summary>
+        /// <returns>
+        /// A collection of all the types in the current <see cref="AppDomain"/>'s assemblies that
+        /// are assignable to <paramref name="type"/>.
+        /// </returns>
+        /// <inheritdoc cref="GetAssignableTypes(Type, IEnumerable{Assembly})"/>
+        public static Type[] GetAssignableTypes(Type type)
+        {
+            return GetAssignableTypes(type, GetAssemblies());
+        }
     }
 }
