@@ -6,8 +6,10 @@
     <Authors>Jake Perry</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>JakePerry.Reflection</PackageId>
-    <Product>Reflection</Product>
+    <Product>JakePerry.Reflection</Product>
     <AssemblyName>JakePerry.Reflection</AssemblyName>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
 </Project>
