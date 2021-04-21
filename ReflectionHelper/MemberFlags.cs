@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JakePerry
+namespace JakePerry.Reflection
 {
     [Flags]
     public enum MemberFlags

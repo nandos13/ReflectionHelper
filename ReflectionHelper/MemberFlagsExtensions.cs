@@ -1,4 +1,4 @@
-﻿namespace JakePerry
+﻿namespace JakePerry.Reflection
 {
     internal static class MemberFlagsExtensions
     {

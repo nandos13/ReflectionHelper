@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace JakePerry
+namespace JakePerry.Reflection
 {
     /// <summary>
     /// Represents an <see cref="Attribute"/> decoration.

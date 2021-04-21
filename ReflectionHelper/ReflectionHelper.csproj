@@ -2,10 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>JakePerry</RootNamespace>
+    <RootNamespace>JakePerry.Reflection</RootNamespace>
     <Authors>Jake Perry</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>JakePerry.ReflectionHelper</PackageId>
+    <PackageId>JakePerry.Reflection</PackageId>
+    <Product>Reflection</Product>
+    <AssemblyName>JakePerry.Reflection</AssemblyName>
   </PropertyGroup>
 
 </Project>
