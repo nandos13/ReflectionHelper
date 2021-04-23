@@ -5,7 +5,7 @@ using System.Reflection;
 namespace JakePerry.Reflection
 {
     /// <summary>
-    /// Represents an <see cref="Attribute"/> decoration.
+    /// A data structure containing an attribute and it's target.
     /// </summary>
     public readonly struct CustomAttributeDecoration : IEquatable<CustomAttributeDecoration>
     {
@@ -38,14 +38,8 @@ namespace JakePerry.Reflection
             return HashCode.Combine(m_attribute, m_target);
         }
 
-        public static bool operator ==(CustomAttributeDecoration left, CustomAttributeDecoration right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(CustomAttributeDecoration left, CustomAttributeDecoration right) => left.Equals(right);
 
-        public static bool operator !=(CustomAttributeDecoration left, CustomAttributeDecoration right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(CustomAttributeDecoration left, CustomAttributeDecoration right) => !(left == right);
     }
 }
