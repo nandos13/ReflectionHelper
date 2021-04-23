@@ -6,33 +6,39 @@ namespace JakePerry.Reflection
 {
     public static class AttributeUtility
     {
+
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
+        /// <summary>
+        /// Emulate the implementation of <see cref="Attribute.GetCustomAttribute"/> methods
+        /// to get the first matching <see cref="Attribute"/>.
+        /// </summary>
+#pragma warning restore CS0419 // Ambiguous reference in cref attribute
+        private static Attribute EmulateGetCustomAttribute(Attribute[] attrib)
+        {
+            if (attrib is null || attrib.Length == 0)
+                return null;
+
+            if (attrib.Length == 1)
+                return attrib[0];
+
+            throw new AmbiguousMatchException();
+        }
+
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
         /// Helper method that invokes the appropriate overload for the <see cref="Attribute.GetCustomAttribute"/> method
         /// depending on the element object's type.
         /// </summary>
         /// <param name="element">The element object.</param>
+        /// <param name="attributeType">The type, or a base type, of the custom attribute to search for.</param>
         /// <param name="inherit">
         /// If true, specified to also search the ancestors of element for custom attributes,
         /// provided element is a <see cref="MemberInfo"/> or a <see cref="ParameterInfo"/>
         /// </param>
         /// <inheritdoc cref="Attribute.GetCustomAttribute(Assembly, Type, bool)"/>
+#pragma warning restore CS0419
         public static Attribute GetCustomAttribute(ICustomAttributeProvider element, Type attributeType, bool inherit)
         {
-            /// <summary>
-            /// Emulate the implementation of <see cref="Attribute.GetCustomAttribute"/> methods
-            /// to get the first matching <see cref="Attribute"/>.
-            /// </summary>
-            static Attribute EmulateGetCustomAttribute(Attribute[] attrib)
-            {
-                if (attrib is null || attrib.Length == 0)
-                    return null;
-
-                if (attrib.Length == 1)
-                    return attrib[0];
-
-                throw new AmbiguousMatchException();
-            }
-
             _ = element ?? throw new ArgumentNullException(nameof(element));
 
             // Check for recognized types first

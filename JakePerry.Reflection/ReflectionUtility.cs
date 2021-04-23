@@ -171,11 +171,15 @@ namespace JakePerry.Reflection
             {
                 var assignableTypes = new List<Type>();
 
+#pragma warning disable HAA0401 // Possible allocation of reference type enumerator
                 foreach (var assembly in assemblies)
+#pragma warning restore HAA0401
+                {
                     if (assembly != null)
                         foreach (var t in assembly.GetTypes())
                             if (type.IsAssignableFrom(t))
                                 assignableTypes.Add(t);
+                }
 
                 if (assignableTypes.Count > 0)
                     return assignableTypes.ToArray();

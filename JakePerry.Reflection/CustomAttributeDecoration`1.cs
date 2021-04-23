@@ -49,7 +49,10 @@ namespace JakePerry.Reflection
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(m_attribute, m_target);
+            int hashCode = -1047610033;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Attribute>.Default.GetHashCode(m_attribute);
+            hashCode = hashCode * -1521134295 + EqualityComparer<ICustomAttributeProvider>.Default.GetHashCode(m_target);
+            return hashCode;
         }
 
         public static bool operator ==(CustomAttributeDecoration<T> left, CustomAttributeDecoration<T> right) => left.Equals(right);
