@@ -155,6 +155,64 @@ namespace JakePerry.Reflection
         }
 
         /// <summary>
+        /// Internally used to check if <paramref name="type"/> implements a given
+        /// generic interface type definition, eg. typeof(IInterface&lt;&gt;).
+        /// </summary>
+        private static bool IsTypeAssignableToGenericInterfaceDefinition(Type genericTypeDefinition, Type type)
+        {
+            foreach (var @interface in type.GetInterfaces())
+                if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == genericTypeDefinition)
+                    return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Internally used to check if <paramref name="type"/> is a subclass of a given
+        /// generic class type definition, eg. typeof(BaseClass&lt;&gt;).
+        /// </summary>
+        private static bool IsTypeAssignableToGenericClassDefinition(Type genericTypeDefinition, Type type)
+        {
+            while (type != null)
+            {
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition)
+                    return true;
+
+                type = type.BaseType;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether an instance of a specified type <paramref name="type"/> can be assigned to
+        /// a variable of type <paramref name="genericTypeDefinition"/> with any combination of generic type arguments.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if any of these conditions is true:
+        ///  * <paramref name="type"/> and <paramref name="genericTypeDefinition"/> represent the same type.
+        ///  * <paramref name="type"/> directly or indirectly derives from a type for which <paramref name="genericTypeDefinition"/>
+        ///  is the generic type definition.
+        ///  * <paramref name="genericTypeDefinition"/> represents a generic interface which <paramref name="type"/>
+        ///  implements with one or more combinations of generic arguments.
+        /// <see langword="false"/> if none of these conditions are true, if <paramref name="type"/> is null,
+        /// or if <paramref name="genericTypeDefinition"/> is null or is not a generic type definition.
+        /// </returns>
+        public static bool IsTypeAssignableToGenericDefinition(Type genericTypeDefinition, Type type)
+        {
+            if (genericTypeDefinition is null || !genericTypeDefinition.IsGenericTypeDefinition)
+                return false;
+
+            if (type == genericTypeDefinition)
+                return true;
+
+            if (genericTypeDefinition.IsInterface)
+                return IsTypeAssignableToGenericInterfaceDefinition(genericTypeDefinition, type);
+
+            return IsTypeAssignableToGenericClassDefinition(genericTypeDefinition, type);
+        }
+
+        /// <summary>
         /// Get all types in the specified assembiles which are assignable to the specified type.
         /// </summary>
         /// <param name="type">The assignee type.</param>
@@ -165,20 +223,60 @@ namespace JakePerry.Reflection
         /// <exception cref="ArgumentNullException"><paramref name="type"/> is null.</exception>
         public static Type[] GetAssignableTypes(Type type, IEnumerable<Assembly> assemblies)
         {
+#pragma warning disable HAA0401 // Possible allocation of reference type enumerator
+
             _ = type ?? throw new ArgumentNullException(nameof(type));
 
             if (assemblies != null)
             {
+                // Sealed types and value types cannot have any other assignable types.
+                if (type.IsSealed || type.IsValueType)
+                {
+                    // If the source type's assembly is included in the searchable assemblies,
+                    // return an array with containing only the source type.
+                    var typeAssembly = type.Assembly;
+                    foreach (var assembly in assemblies)
+                        if (assembly == typeAssembly)
+                            return new Type[1] { type };
+
+                    return Array.Empty<Type>();
+                }
+
                 var assignableTypes = new List<Type>();
 
-#pragma warning disable HAA0401 // Possible allocation of reference type enumerator
-                foreach (var assembly in assemblies)
-#pragma warning restore HAA0401
+                // Generic type definitions are a special case as it doesn't work with the IsAssignableFrom method.
+                if (type.IsGenericTypeDefinition)
                 {
-                    if (assembly != null)
-                        foreach (var t in assembly.GetTypes())
-                            if (type.IsAssignableFrom(t))
-                                assignableTypes.Add(t);
+                    if (type.IsInterface)
+                    {
+                        foreach (var assembly in assemblies)
+                        {
+                            if (assembly != null)
+                                foreach (var t in assembly.GetTypes())
+                                    if (IsTypeAssignableToGenericInterfaceDefinition(type, t))
+                                        assignableTypes.Add(t);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var assembly in assemblies)
+                        {
+                            if (assembly != null)
+                                foreach (var t in assembly.GetTypes())
+                                    if (IsTypeAssignableToGenericClassDefinition(type, t))
+                                        assignableTypes.Add(t);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var assembly in assemblies)
+                    {
+                        if (assembly != null)
+                            foreach (var t in assembly.GetTypes())
+                                if (type.IsAssignableFrom(t))
+                                    assignableTypes.Add(t);
+                    }
                 }
 
                 if (assignableTypes.Count > 0)
@@ -186,6 +284,8 @@ namespace JakePerry.Reflection
             }
 
             return Array.Empty<Type>();
+
+#pragma warning restore HAA0401
         }
 
         /// <summary>

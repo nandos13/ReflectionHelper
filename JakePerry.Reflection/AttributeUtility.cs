@@ -6,13 +6,12 @@ namespace JakePerry.Reflection
 {
     public static class AttributeUtility
     {
-
 #pragma warning disable CS0419 // Ambiguous reference in cref attribute
         /// <summary>
         /// Emulate the implementation of <see cref="Attribute.GetCustomAttribute"/> methods
         /// to get the first matching <see cref="Attribute"/>.
         /// </summary>
-#pragma warning restore CS0419 // Ambiguous reference in cref attribute
+#pragma warning restore CS0419
         private static Attribute EmulateGetCustomAttribute(Attribute[] attrib)
         {
             if (attrib is null || attrib.Length == 0)

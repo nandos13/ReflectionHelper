@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
     <RootNamespace>JakePerry.Reflection</RootNamespace>
     <Authors>Jake Perry</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -12,8 +13,6 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Version>1.0.2</Version>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;CS1591</NoWarn>
   </PropertyGroup>
 </Project>
