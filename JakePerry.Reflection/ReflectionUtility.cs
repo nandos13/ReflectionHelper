@@ -155,12 +155,19 @@ namespace JakePerry.Reflection
         }
 
         /// <summary>
-        /// Internally used to check if <paramref name="type"/> implements a given
-        /// generic interface type definition, eg. typeof(IInterface&lt;&gt;).
+        /// Checks if a type <paramref name="c"/> implements one or more interfaces
+        /// constructed from a generic type definition.
         /// </summary>
-        private static bool IsTypeAssignableToGenericInterfaceDefinition(Type genericTypeDefinition, Type type)
+        /// <param name="c">
+        /// The type to compare to the generic type definition.
+        /// </param>
+        /// <param name="genericTypeDefinition">
+        /// The generic type definition to be checked for in type <paramref name="c"/>'s implemented interfaces.
+        /// </param>
+        /// <remarks>Private method only, parameters are not validated.</remarks>
+        private static bool CheckTypeImplementsInterfaceOfGenericDefinition(Type c, Type genericTypeDefinition)
         {
-            foreach (var @interface in type.GetInterfaces())
+            foreach (var @interface in c.GetInterfaces())
                 if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == genericTypeDefinition)
                     return true;
 
@@ -168,48 +175,93 @@ namespace JakePerry.Reflection
         }
 
         /// <summary>
-        /// Internally used to check if <paramref name="type"/> is a subclass of a given
-        /// generic class type definition, eg. typeof(BaseClass&lt;&gt;).
+        /// Checks if a type <paramref name="c"/> is derived from a class that
+        /// is constructed from a generic type definition.
         /// </summary>
-        private static bool IsTypeAssignableToGenericClassDefinition(Type genericTypeDefinition, Type type)
+        /// <param name="c">
+        /// The type to compare to the generic type definition.
+        /// </param>
+        /// <param name="genericTypeDefinition">
+        /// The generic type definition to be checked for in type <paramref name="c"/>'s inheritance hierarchy.
+        /// </param>
+        /// <remarks>Private method only, parameters are not validated.</remarks>
+        private static bool CheckTypeDerivesFromClassOfGenericDefinition(Type c, Type genericTypeDefinition)
         {
-            while (type != null)
+            while (c != null)
             {
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition)
+                if (c.IsGenericType && c.GetGenericTypeDefinition() == genericTypeDefinition)
                     return true;
 
-                type = type.BaseType;
+                c = c.BaseType;
             }
 
             return false;
         }
 
+        /// <remarks></remarks>
+        /// <inheritdoc cref="CheckTypeImplementsInterfaceOfGenericDefinition(Type, Type)"/>
+        internal static bool TypeImplementsInterfaceOfGenericDefinition(Type c, Type genericTypeDefinition)
+        {
+            if (c is null ||
+                genericTypeDefinition is null ||
+                !genericTypeDefinition.IsGenericTypeDefinition ||
+                !genericTypeDefinition.IsInterface)
+            {
+                return false;
+            }
+
+            return c == genericTypeDefinition
+                || CheckTypeImplementsInterfaceOfGenericDefinition(c, genericTypeDefinition);
+        }
+
+        /// <remarks></remarks>
+        /// <inheritdoc cref="CheckTypeDerivesFromClassOfGenericDefinition(Type, Type)"/>
+        internal static bool TypeDerivesFromClassOfGenericDefinition(Type c, Type genericTypeDefinition)
+        {
+            if (c is null ||
+                genericTypeDefinition is null ||
+                !genericTypeDefinition.IsGenericTypeDefinition ||
+                genericTypeDefinition.IsInterface)
+            {
+                return false;
+            }
+
+            return c == genericTypeDefinition
+                || CheckTypeDerivesFromClassOfGenericDefinition(c, genericTypeDefinition);
+        }
+
         /// <summary>
-        /// Determines whether an instance of a specified type <paramref name="type"/> can be assigned to
-        /// a variable of type <paramref name="genericTypeDefinition"/> with any combination of generic type arguments.
+        /// Determines whether the type <paramref name="c"/> is derived from a class - or implements one
+        /// or more interfaces - that is constructed from a generic type definition.
         /// </summary>
         /// <returns>
         /// <see langword="true"/> if any of these conditions is true:
-        ///  * <paramref name="type"/> and <paramref name="genericTypeDefinition"/> represent the same type.
-        ///  * <paramref name="type"/> directly or indirectly derives from a type for which <paramref name="genericTypeDefinition"/>
+        /// <para>
+        ///  * <paramref name="c"/> and <paramref name="genericTypeDefinition"/> represent the same generic type definition.
+        /// </para>
+        /// <para>
+        ///  * <paramref name="c"/> directly or indirectly derives from a type for which <paramref name="genericTypeDefinition"/>
         ///  is the generic type definition.
-        ///  * <paramref name="genericTypeDefinition"/> represents a generic interface which <paramref name="type"/>
+        /// </para>
+        /// <para>
+        ///  * <paramref name="genericTypeDefinition"/> represents a generic interface which <paramref name="c"/>
         ///  implements with one or more combinations of generic arguments.
-        /// <see langword="false"/> if none of these conditions are true, if <paramref name="type"/> is null,
+        /// </para>
+        /// <see langword="false"/> if none of these conditions are true, if <paramref name="c"/> is null,
         /// or if <paramref name="genericTypeDefinition"/> is null or is not a generic type definition.
         /// </returns>
-        public static bool IsTypeAssignableToGenericDefinition(Type genericTypeDefinition, Type type)
+        public static bool TypeIsOfGenericDefinition(Type c, Type genericTypeDefinition)
         {
-            if (genericTypeDefinition is null || !genericTypeDefinition.IsGenericTypeDefinition)
+            if (c is null || genericTypeDefinition is null || !genericTypeDefinition.IsGenericTypeDefinition)
                 return false;
 
-            if (type == genericTypeDefinition)
+            if (c == genericTypeDefinition)
                 return true;
 
             if (genericTypeDefinition.IsInterface)
-                return IsTypeAssignableToGenericInterfaceDefinition(genericTypeDefinition, type);
+                return CheckTypeImplementsInterfaceOfGenericDefinition(c, genericTypeDefinition);
 
-            return IsTypeAssignableToGenericClassDefinition(genericTypeDefinition, type);
+            return CheckTypeDerivesFromClassOfGenericDefinition(c, genericTypeDefinition);
         }
 
         /// <summary>
@@ -253,7 +305,7 @@ namespace JakePerry.Reflection
                         {
                             if (assembly != null)
                                 foreach (var t in assembly.GetTypes())
-                                    if (IsTypeAssignableToGenericInterfaceDefinition(type, t))
+                                    if (CheckTypeImplementsInterfaceOfGenericDefinition(t, type))
                                         assignableTypes.Add(t);
                         }
                     }
@@ -263,7 +315,7 @@ namespace JakePerry.Reflection
                         {
                             if (assembly != null)
                                 foreach (var t in assembly.GetTypes())
-                                    if (IsTypeAssignableToGenericClassDefinition(type, t))
+                                    if (CheckTypeDerivesFromClassOfGenericDefinition(t, type))
                                         assignableTypes.Add(t);
                         }
                     }
