@@ -167,6 +167,9 @@ namespace JakePerry.Reflection
         /// <remarks>Private method only, parameters are not validated.</remarks>
         private static bool CheckTypeImplementsInterfaceOfGenericDefinition(Type c, Type genericTypeDefinition)
         {
+            if (c.IsInterface && c.IsGenericType && c.GetGenericTypeDefinition() == genericTypeDefinition)
+                return true;
+
             foreach (var @interface in c.GetInterfaces())
                 if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == genericTypeDefinition)
                     return true;
